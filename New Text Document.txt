@@ -1,0 +1,22 @@
+import vk_api
+from vk_api.longpoll import VkLongPoll, VkEventType
+
+# initialize vk session
+vk_session = vk_api.VkApi(token="your_token")
+
+# initialize long poll
+longpoll = VkLongPoll(vk_session)
+
+# handling new messages
+for event in longpoll.listen():
+    if event.type == VkEventType.MESSAGE_NEW and event.to_me:
+        # get message text
+        message_text = event.text.lower()
+
+        # handle message
+        if message_text == "hello":
+            vk_session.method("messages.send", {"peer_id": event.peer_id, "message": "Hello! How can I help you?", "random_id": 0})
+        elif message_text == "bye":
+            vk_session.method("messages.send", {"peer_id": event.peer_id, "message": "Goodbye! Have a nice day!", "random_id": 0})
+        else:
+            vk_session.method("messages.send", {"peer_id": event.peer_id, "message": "I'm sorry, I didn't understand you.", "random_id": 0})
