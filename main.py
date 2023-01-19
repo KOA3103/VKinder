@@ -63,20 +63,24 @@ def get_user_status(user_id):
     status = vk_session.method("status.get", {"user_id": user_id})
     print(status["text"])
 
+# def get_group_status(group_id):
+#     status = vk_session.method("status.get", {"group_id": group_id})
+#     print(status["text"])
+
 def get_group_status(group_id):
-    status = vk_session.method("status.get", {"group_id": group_id})
+    status = vk.status.get(group_id=group_id)
     print(status["text"])
 
 
-def set_user_status():
-    vk.status.set(text="My studying Python in progress!")
+def set_user_status(text):
+    vk.status.set(text=text)
 
 
 def set_group_status():
-    vk.status.set(text="Service under development!", group_id=218321292)
+    vk.status.set(text="Service bot under development!", group_id=218321292)
 
 
-set_user_status()
+set_user_status("My studying Python in progress! Like, Like)")
 set_group_status()
 
 get_user_status(158189236)
