@@ -1,16 +1,17 @@
 import os
+from random import randrange
 import random
-import vk_api
+from random import randrange
 import datetime
+import vk_api
 import time
 import json
 from pprint import pprint
 
-file_path = os.path.join(os.getcwd(), 'token_vk.txt')  # Токен запрятан в отдельный файл (token_vk.txt).
+file_path = os.path.join(os.getcwd(), 'token_vk_pr.txt')  # Токен запрятан в отдельный файл (token_vk.txt).
 with open(file_path, 'r', encoding='utf-8') as f:
     token_vk = f.readline()
-    # print(token_vk)
-vk_session = vk_api.VkApi(token=token_vk)  # Создаем переменную сесии.
+vk_session = vk_api.VkApi(token=token_vk, api_version='5.131')  # Создаем переменную сесии.
 vk = vk_session.get_api()  # Создаем другую переменную (vk), где переменную сесии (vk_session) подключаем к api списку методов.
 vk_session._auth_token()  # Авторизация токена.
 
@@ -53,15 +54,10 @@ def get_last_msg():
     return user_id
 
 
-# get_last_msg()
-
-
-# send_message = vk_session.method("messages.send", {"user_id": 158189236, "messages": "What up? Repeat again!", "random_id": random.randint(1, 1000)})
-# print(send_message)
-
 def get_user_status(user_id):
     status = vk_session.method("status.get", {"user_id": user_id})
     print(status["text"])
+
 
 # def get_group_status(group_id):
 #     status = vk_session.method("status.get", {"group_id": group_id})
@@ -76,12 +72,86 @@ def set_user_status(text):
     vk.status.set(text=text)
 
 
-def set_group_status():
-    vk.status.set(text="Service bot under development!", group_id=218321292)
+# def set_group_status():
+#     vk.status.set(text="Service bot under development!", group_id=218321292)
+
+def set_group_status(text, group_id):
+    vk_session.method("status.set", {"text": text, "group_id": group_id})
 
 
-set_user_status("My studying Python in progress! Like, Like)")
-set_group_status()
+def get_friends_status(user_id):
+    friends = vk_session.method("friends.get", {"user_id": user_id})
+    num = 0
+    for friend in friends["items"]:
+        friend_info = vk.users.get(user_ids=friend)
+        # print(f'{num}. {friend_info}')
+        try:
+            num += 1
+            friend_status = vk.status.get(user_id=friend)
+            if friend_status["text"] == "":
+                continue
+            else:
+                print(
+                    f'{num}. {friend_info[0]["first_name"]} {friend_info[0]["last_name"]} <-> {friend_status["text"]}')
+        except vk_api.exceptions.ApiError:
+            num -= 1
+            pass
 
-get_user_status(158189236)
-get_group_status(218321292)
+
+def get_friends_is_banned(user_id):
+    friends = vk_session.method("friends.get", {"user_id": user_id})
+    num_bunned = 0
+    for friend in friends["items"]:
+        friend_info = vk.users.get(user_ids=friend)
+        # print(f'{num}. {friend_info}')
+        try:
+            num_bunned += 1
+            print(
+                f'{num_bunned}. {friend_info[0]["first_name"]} {friend_info[0]["last_name"]} <-> {friend_info[0]["deactivated"]}')
+        except KeyError:
+            num_bunned -= 1
+            pass
+
+def get_friend_info(user_id):
+    friends = vk_session.method("friends.get", {"user_id": user_id})
+    num = 0
+    for friend in friends["items"]:
+        friend_info = vk.users.get(user_ids=friend)
+        # print(f'{num}. {friend_info}')
+        try:
+            num += 1
+            friend_status = vk.status.get(user_id=friend)
+            print(f'{num}. {friend_info[0]["id"]}: {friend_info[0]["first_name"]} {friend_info[0]["last_name"]} <-> {friend_status["text"]}')
+        except vk_api.exceptions.ApiError:
+            num -= 1
+            pass
+
+def get_random_id():
+    return random.getrandbits(31) * random.choice([-1, 1])
+
+
+def send_message(user_id):
+    vk_session.method("messages.send", {
+        "user_id": user_id,
+        "message": " да пост гавно, ну ни че и туда руки дойдут :)))",
+        "random_id": randrange(10 ** 7),
+    })
+
+
+
+# get_last_msg()
+
+# set_user_status("My studying Python in progress! Like, Like)")
+# set_group_status("Now service bot under development!", 218321292)
+
+# get_user_status(158189236)
+# get_group_status(218321292)
+
+# get_friends_status(158189236)
+# get_friends_is_banned(158189236)
+
+# get_friend_info(158189236)
+
+# send_message(158189236)
+# send_message(205642650)
+send_message(22221403)
