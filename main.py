@@ -1,5 +1,5 @@
 import os
-from random import randrange
+from vk_api.longpoll import VkLongPoll, VkEventType
 import random
 from random import randrange
 import datetime
@@ -7,13 +7,16 @@ import vk_api
 import time
 import json
 from pprint import pprint
+from config import user_token, group_token
 
-file_path = os.path.join(os.getcwd(), 'token_vk_pr.txt')  # Токен запрятан в отдельный файл (token_vk.txt).
-with open(file_path, 'r', encoding='utf-8') as f:
-    token_vk = f.readline()
-vk_session = vk_api.VkApi(token=token_vk, api_version='5.131')  # Создаем переменную сесии.
+
+vk_session = vk_api.VkApi(token=user_token, api_version='5.131')  # Создаем переменную сесии.
 vk = vk_session.get_api()  # Создаем другую переменную (vk), где переменную сесии (vk_session) подключаем к api списку методов.
 vk_session._auth_token()  # Авторизация токена.
+
+group_vk_session = vk_api.VkApi(token=group_token, api_version='5.131')  # Создаем переменную сесии group_token.
+vk_longpoll = VkLongPoll(group_vk_session)  # Создаем другую переменную (vk_longpoll), где переменную сесии (group_vk_session) подключаем к классу VkLongPoll.
+# vk_session._auth_token()  # Авторизация токена.
 
 
 def get_last_msg():
@@ -130,13 +133,28 @@ def get_random_id():
     return random.getrandbits(31) * random.choice([-1, 1])
 
 
-def send_message(user_id):
-    vk_session.method("messages.send", {
+# def send_message(user_id, message):
+#     vk_session.method("messages.send", {
+#         "user_id": user_id,
+#         "message": message,
+#         "random_id": randrange(10 ** 7),
+#     })
+
+
+def bot_send_msg(user_id, message):
+    group_vk_session.method("messages.send", {
         "user_id": user_id,
-        "message": " да пост гавно, ну ни че и туда руки дойдут :)))",
+        "message": message,
         "random_id": randrange(10 ** 7),
     })
 
+for event in vk_longpoll.listen():
+    if event.type == VkEventType.MESSAGE_NEW and event.to_me:
+        text = event.text.lower()
+        user_id = event.user_id
+
+        if text == "hi":
+            bot_send_msg(user_id, " 3 Привет! What's up?:)")
 
 
 # get_last_msg()
@@ -154,4 +172,6 @@ def send_message(user_id):
 
 # send_message(158189236)
 # send_message(205642650)
-send_message(22221403)
+# send_message(22221403, "звони на МТС мой 2й номер: ")
+# send_message(22221403, "")
+# send_message(22221403, "у меня 'Волна' если че")
