@@ -289,3 +289,53 @@ def user_photo(owner_id):
     # pprint(res)
 
 user_photo("52968274")
+
+
+
+albums (integer) — количество фотоальбомов;
+
+•
+videos (integer) — количество видеозаписей;
+
+•
+audios (integer) — количество аудиозаписей;
+
+•
+photos (integer) — количество фотографий;
+
+•
+notes (integer) — количество заметок;
+
+•
+friends (integer) — количество друзей;
+
+•
+groups (integer) — количество сообществ;
+
+•
+online_friends (integer) — количество друзей онлайн;
+
+•
+mutual_friends (integer) — количество общих друзей;
+
+•
+user_videos (integer) — количество видеозаписей с пользователем;
+
+•
+followers (integer) — количество подписчиков;
+
+•
+pages (integer) — количество объектов в блоке «Интересные страницы».
+----------------------------------------------------------
+import datetime
+
+bdate = '6.2.2000'
+bdate_splited = bdate.split(".")
+reverse_bdate = datetime.date(int(bdate_splited[2]), int(bdate_splited[1]), int(bdate_splited[0]))
+print(reverse_bdate)
+today = datetime.date.today()
+print(today)
+years = (today.year-reverse_bdate.year)
+if reverse_bdate.month >= today.month and reverse_bdate.day > today.day:
+    years -= 1
+print(years)
