@@ -15,7 +15,7 @@ class Bot:
     def __init__(self):
         print('Bot was created')
         self.vk_user = vk_api.VkApi(
-            token=user_token)  # Создаем переменную сесии, авторизованную личным токеном пользователя.
+            token=user_token)  # Создаем переменную сессии, авторизованную личным токеном пользователя.
         self.vk_user_got_api = self.vk_user.get_api()  # # переменную сессии vk_user подключаем к api списку методов.
         self.vk_user._auth_token()  # Авторизация токена.
         self.vk_group = vk_api.VkApi(token=group_token)  # Создаем переменную сесии, авторизованную токеном сообщества.
@@ -126,7 +126,7 @@ class Bot:
                 print(f'Ваш {self.get_years_of_person(info)}')
                 self.send_msg(user_id,
                               f'   Бот ищет людей вашего возраста, но в ваших настройках профиля установлен пункт "Показывать только месяц и день рождения"! \n'
-                              f'   Поэтому, введите возраст поиска, на пример от 21 года и до 35 лет, в формате : 21-35 (или 21-21 конкретный возраст 21 год).'
+                              f'   Поэтому, введите возраст поиска, на пример от 21 года и до 35 лет, в формате : 21-35 (или 21 конкретный возраст 21 год).'
                               )
                 for event in self.longpoll.listen():
                     if event.type == VkEventType.MESSAGE_NEW and event.to_me:
@@ -143,7 +143,7 @@ class Bot:
             print(f'День рождения скрыт настройками приватности!')
             self.send_msg(user_id,
                           f' Бот ищет людей вашего возраста, но в ваших в настройках профиля установлен пункт "Не показывать дату рождения". '
-                          f'\n Поэтому, введите возраст поиска, на пример от 21 года и до 35 лет, в формате : 21-35 (или 21-21 конкретный возраст 21 год).'
+                          f'\n Поэтому, введите возраст поиска, на пример от 21 года и до 35 лет, в формате : 21-35 (или 21 конкретный возраст 21 год).'
                           )
             for event in self.longpoll.listen():
                 if event.type == VkEventType.MESSAGE_NEW and event.to_me:
@@ -281,6 +281,7 @@ class Bot:
             # умолчанию: 0.
             count=30
         )
+        print(res)
         dict_photos = dict()
         for i in res['items']:
             photo_id = str(i["id"])
