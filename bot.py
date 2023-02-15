@@ -39,18 +39,18 @@ class Bot:
         name = user_info[0]['first_name']
         return name
 
-    def get_user_info(self, user_id):
-        info = self.vk_user_got_api.users.get(
-            user_id=user_id,
-            fields="counters, "  # Количество различных объектов у пользователя.
-                   "city, "
-                   "bdate",
-        )
-        # print(info[0]['first_name'])
-        # print(info[0]['city'])
-        print(info[0]['bdate'])
+    # def get_user_info(self, user_id):
+    #     info = self.vk_user_got_api.users.get(
+    #         user_id=user_id,
+    #         fields="counters, "  # Количество различных объектов у пользователя.
+    #                "city, "
+    #                "bdate",
+    #     )
+    #     # print(info[0]['first_name'])
+    #     # print(info[0]['city'])
+    #     print(info[0]['bdate'])
 
-    def naming_of_years(self, years, till=None):
+    def naming_of_years(self, years, till=True):
         """addition to years"""
         if till is True:
             name_years = [1, 21, 31, 41, 51, 61, 71, 81, 91, 101]
@@ -67,6 +67,29 @@ class Bot:
             else:
                 return f'{years} лет'
 
+    def input_looking_age(self, user_id, age):
+        global age_from, age_to
+        a = age.split("-")
+        age_from = int(a[0])
+        try:
+            age_to = int(a[1])
+            if age_from == age_to:
+                self.send_msg(user_id, f' Ищем возраст {self.naming_of_years(age_to, False)}')
+                return
+            self.send_msg(user_id, f' Ищем возраст в пределах от {age_from} и до {self.naming_of_years(age_to, True)}')
+            return
+        except IndexError:
+            age_to = int(age)
+            self.send_msg(user_id, f' Ищем возраст {self.naming_of_years(age_to, False)}')
+            return
+        except NameError:
+            self.send_msg(user_id, f' Введен не правильный числовой формат! Game over!')
+            return
+        except ValueError:
+            self.send_msg(user_id, f' Введен не правильный числовой формат! Game over!')
+            return
+
+
     def get_years_of_person(self, bdate: str) -> object:
         """determining the number of years"""
         bdate_splited = bdate.split(".")
@@ -77,13 +100,7 @@ class Bot:
             years = (today.year - reverse_bdate.year)
             if reverse_bdate.month >= today.month and reverse_bdate.day > today.day or reverse_bdate.month > today.month:
                 years -= 1
-            name_years = [2, 3, 4, 22, 23, 24, 32, 33, 34, 42, 43, 44, 52, 53, 54, 62, 63, 64]
-            if years == 1 or years == 21 or years == 31 or years == 41 or years == 51 or years == 61:
-                return f'{years} год'
-            elif years in name_years:
-                return f'{years} года'
-            else:
-                return f'{years} лет'
+            return self.naming_of_years(years, False)
         except IndexError:
             if bdate_splited[1] == "1":
                 month = "января"
@@ -131,14 +148,8 @@ class Bot:
                 for event in self.longpoll.listen():
                     if event.type == VkEventType.MESSAGE_NEW and event.to_me:
                         age = event.text
-                        a = age.rsplit("-")
-                        age_from = int(a[0])
-                        age_to = int(a[1])
-                        if age_from == age_from:
-                            return f' Ищем возраст {self.naming_of_years(age_to, True)}, '
-                        return f' Ищем возраст в пределах от {age_from} и до {self.naming_of_years(age_to, True)}, '
-
-            return f' Ищем вашего возраста {self.naming_of_years(age_to)}, '
+                        return self.input_looking_age(user_id, age)
+            return print(f' Ищем вашего возраста {self.naming_of_years(age_to)}')
         except KeyError:
             print(f'День рождения скрыт настройками приватности!')
             self.send_msg(user_id,
@@ -148,19 +159,7 @@ class Bot:
             for event in self.longpoll.listen():
                 if event.type == VkEventType.MESSAGE_NEW and event.to_me:
                     age = event.text
-                    try:
-                        a = age.rsplit("-")
-                        age_from = int(a[0])
-                        age_to = int(a[1])
-                        if age_from == age_to:
-                            return f' Ищем возраст {self.naming_of_years(age_to, True)}, '
-                        return f' Ищем возраст в пределах от {age_from} и до {self.naming_of_years(age_to, True)}, '
-                    except IndexError:
-                        age_from = age
-                        age_to = age
-                        return f' Ищем возраст {self.naming_of_years(age_to, True)}, '
-                    except NameError:
-                        return f' Введен не правильный числовой формат!  '
+                    return self.input_looking_age(user_id, age)
 
     def get_target_city(self, user_id):
         """define city to search"""
@@ -222,54 +221,26 @@ class Bot:
             age_to=age_to,
             has_photo=1,  # 1 — искать только пользователей с фотографией, 0 — искать по всем пользователям
             count=1000,
-            fields="about, "  # Содержимое поля «О себе» из профиля.
-                   "activities, "  # Содержимое поля «Деятельность» из профиля.
-                   "bdate, "  # Дата рождения. Возвращается в формате D.M.YYYY или D.M (если год рождения скрыт). Если дата рождения скрыта целиком, поле отсутствует в ответе.
-                   "status, "
-                   "can_write_private_message, "  # Информация о том, может ли текущий пользователь отправить личное сообщение. Возможные значения: 1 — может; 0 — не может.
+            fields="can_write_private_message, "  # Информация о том, может ли текущий пользователь отправить личное сообщение. Возможные значения: 1 — может; 0 — не может.
                    "city, "  # Информация о городе, указанном на странице пользователя в разделе «Контакты».
-                   "common_count, "  # Количество общих друзей с текущим пользователем.
-                   "contacts, "  # Информация о телефонных номерах пользователя. Если данные указаны и не скрыты настройками приватности.
                    "domain, "  # Короткий адрес страницы.
                    "home_town, "  # Название родного города.
-                   "interests, "  # Содержимое поля «Интересы» из профиля.
-                   "movies, "  # Содержимое поля «Любимые фильмы» из профиля пользователя.
-                   "music, "  # Содержимое поля «Любимая музыка» из профиля пользователя.
-                   "occupation, "  # Информация о текущем роде занятия пользователя.
         )
-        # pprint(res)
-        # print(res['items'])
-        # print(res['items'][0]["id"])
         number = 0
         for person in res["items"]:
             if not person["is_closed"]:
-                first_name = person["first_name"]
-                last_name = person["last_name"]
-                # age = self.get_years_of_person(person["bdate"])
-                id_vk = person["id"]
-                vk_link = 'vk.com/' + person["domain"]
-                request_from = user_id
                 if "city" in person and person["city"]["id"] == city_id and person["city"]["title"] == city_title:
-                    city = f'Город {person["city"]["title"]}'
                     try:
                         number += 1
-                        insert_found_person(first_name, last_name, id_vk, vk_link, request_from)
-                        # self.send_msg(user_id, f'{number}. {first_name} {last_name}, {age}, {city}, {vk_link}')
-                    except psycopg2.errors.UniqueViolation:
-                        pass
-                else:
-                    try:
-                        city = f'Город {person["home_town"]}'
-                        try:
-                            number += 1
-                            insert_found_person(first_name, last_name, id_vk, vk_link, request_from)  # вставка в БД.
-                            # self.send_msg(user_id, f'{number}. {first_name} {last_name}, {age}, {city}, {vk_link}')
-                        except psycopg2.errors.UniqueViolation:
-                            pass
-                    except KeyError:
+                        id_vk = person["id"]
+                        first_name = person["first_name"]
+                        last_name = person["last_name"]
+                        print(1, first_name, 1, last_name, 1, id_vk)
+                        insert_found_person(id_vk)  # вставка в БД.
+                    except psycopg2.errors.UniqueViolation:  # Если найденный id_vk уже есть в БД, то он пропускается.
                         pass
         print(f'Bot found {number} opened profiles for viewing from {res["count"]}')
-        return f'Бот нашел {number} открытых профилей для просмотра из {res["count"]}'
+        return self.send_msg(user_id, f'Бот нашел {number}')
 
     def photo_of_found_person(self, user_id):
         """getting a photo of a found person"""
@@ -281,7 +252,7 @@ class Bot:
             # умолчанию: 0.
             count=30
         )
-        print(res)
+        # print(res)
         dict_photos = dict()
         for i in res['items']:
             photo_id = str(i["id"])
@@ -299,12 +270,15 @@ class Bot:
             attachments.append('photo{}_{}'.format(user_id, photo_ids[0]))
             attachments.append('photo{}_{}'.format(user_id, photo_ids[1]))
             attachments.append('photo{}_{}'.format(user_id, photo_ids[2]))
-            # print(attachments)
             return attachments
         except IndexError:
-            attachments.append('photo{}_{}'.format(user_id, photo_ids[0]))
-            # print(attachments)
-            return attachments
+            try:
+                attachments.append('photo{}_{}'.format(user_id, photo_ids[0]))
+                return attachments
+            except IndexError:
+                return print(f'Нет фото')
+
+
 
     def found_person_info(self, show_person_id):
         """information about the found person"""
@@ -329,10 +303,14 @@ class Bot:
         last_name = res[0]["last_name"]
         age = self.get_years_of_person(res[0]["bdate"])
         vk_link = 'vk.com/' + res[0]["domain"]
+        city = ''
         try:
-            city = f'Город {res[0]["city"]["title"]}'
+            if res[0]["city"]["title"] is not None:
+                city = f'Город {res[0]["city"]["title"]}'
+            else:
+                city = f'Город {res[0]["home_town"]}'
         except KeyError:
-            city = f'Город {res[0]["home_town"]}'
+            pass
         print(f'{first_name} {last_name}, {age}, {city}. {vk_link}')
         return f'{first_name} {last_name}, {age}, {city}. {vk_link}'
 
@@ -347,14 +325,21 @@ class Bot:
 
     def show_found_person(self, user_id):
         """show person from database"""
-        print(f'Поиск от пользователя: {user_id}')
         try:
-            self.send_msg(user_id, self.found_person_info(select(offset)[2]))
-            self.send_photo(user_id, 'Три фото с максимальными лайками', self.photo_of_found_person(select(offset)[2]))
-            insert_data_seen_person(select(offset)[2], offset)  # offset ( select(offset)[2] = fp.id_vk )
+            self.send_msg(user_id, self.found_person_info(select(offset)[0]))
+            self.send_photo(user_id, 'Фото с максимальными лайками', self.photo_of_found_person(select(offset)[0]))
+            insert_data_seen_person(select(offset)[0], offset)  # offset ( select(offset)[0] = fp.id_vk )
         except TypeError:
-            return f' Похоже просмотренны все профили из БД. \n' \
-                   f' Наберите "Искать дальше" для поиска и добавления в БД.'
+            self.send_msg(user_id,
+                          f'Все анекты просмотрены. Будет выполнен новый поиск. Измените критерии поиска (возраст, город). Введите возраст поиска, на пример от 21 года и до 35 лет, в формате : 21-35 (или 21 конкретный возраст 21 год).  ')
+            for event in self.longpoll.listen():
+                if event.type == VkEventType.MESSAGE_NEW and event.to_me:
+                    age = event.text
+                    self.input_looking_age(user_id, age)
+                    self.get_target_city(user_id)
+                    self.looking_for_persons(user_id)
+                    self.send_msg(user_id, f'  Сейчас наберите "Смотреть" ')
+                    return
 
 
 bot = Bot()

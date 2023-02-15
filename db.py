@@ -17,12 +17,7 @@ def create_table_found_person():
         cursor.execute(
             """CREATE TABLE IF NOT EXISTS found_person(
                 id serial,
-                first_name varchar(50) NOT NULL,
-                last_name varchar(25) NOT NULL,
-                id_vk varchar(20) NOT NULL PRIMARY KEY,
-                vk_link varchar(50),
-                request_from varchar(20) NOT NULL);"""
-
+                id_vk varchar(20) NOT NULL PRIMARY KEY);"""
         )
 
 
@@ -36,13 +31,13 @@ def create_table_seen_person():  # references users(id_vk)
         )
 
 
-def insert_found_person(first_name, last_name, id_vk, vk_link, request_from):
+def insert_found_person(id_vk):
     """insert info from looking_for_persons into table found_person"""
     with conn.cursor() as cursor:
         cursor.execute(
-            f"""INSERT INTO found_person (first_name, last_name, id_vk, vk_link, request_from) 
-            VALUES (%s, %s, %s, %s, %s)""",
-            (first_name, last_name, id_vk, vk_link, request_from)
+            f"""INSERT INTO found_person (id_vk) 
+            VALUES (%s)""",
+            (id_vk,)
         )
 
 
@@ -55,13 +50,13 @@ def insert_data_seen_person(id_vk, offset):
             OFFSET '{offset}';"""
         )
 
-def check():
-    with conn.cursor() as cursor:
-        cursor.execute(
-            f"""SELECT fp.id_vk 
-            FROM found_person AS fp;"""
-        )
-        return cursor.fetchall()
+# def check():
+#     with conn.cursor() as cursor:
+#         cursor.execute(
+#             f"""SELECT fp.id_vk
+#             FROM found_person AS fp;"""
+#         )
+#         return cursor.fetchall()
 
 
 
@@ -70,10 +65,7 @@ def select(offset):
     with conn.cursor() as cursor:
         cursor.execute(
             f"""SELECT 
-            fp.first_name,
-            fp.last_name,
-            fp.id_vk,  
-            fp.vk_link,
+            fp.id_vk, 
             sp.id_vk
             FROM found_person AS fp
             LEFT JOIN seen_person AS sp 
