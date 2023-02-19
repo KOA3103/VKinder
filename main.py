@@ -12,9 +12,6 @@ for event in bot.longpoll.listen():
 
 
         if request == 'поиск':
-
-            # bot.send_msg(user_id, f'{bot.name(user_id)}. Бот в процессе поиска')
-            # bot.send_msg(user_id, f'{bot.get_age_of_user(user_id)}{bot.get_target_city(user_id)}')
             bot.get_age_of_user(user_id)
             bot.get_target_city(user_id)
             bot.looking_for_persons(user_id)  # выводит список в чат найденных людей и добавляет их в базу данных.
@@ -27,7 +24,6 @@ for event in bot.longpoll.listen():
                 offset += 1
                 bot.show_found_person(user_id)
                 break
-
         else:
             bot.send_msg(user_id, f'{bot.name(user_id)} Бот готов к поиску, наберите: \n '
                                       f' "Поиск" - найденных людей помещаем в БД. \n'

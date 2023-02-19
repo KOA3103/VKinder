@@ -242,7 +242,6 @@ class Bot:
             # умолчанию: 0.
             count=30
         )
-        # print(res)
         dict_photos = dict()
         for i in res['items']:
             photo_id = str(i["id"])
