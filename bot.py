@@ -17,7 +17,6 @@ class Bot:
         self.vk_user = vk_api.VkApi(
             token=user_token)  # Создаем переменную сессии, авторизованную личным токеном пользователя.
         self.vk_user_got_api = self.vk_user.get_api()  # # переменную сессии vk_user подключаем к api списку методов.
-        self.vk_user._auth_token()  # Авторизация токена.
         self.vk_group = vk_api.VkApi(token=group_token)  # Создаем переменную сесии, авторизованную токеном сообщества.
         self.vk_group_got_api = self.vk_group.get_api()  # переменную сессии vk_group подключаем к api списку методов.
         self.longpoll = VkLongPoll(
@@ -36,19 +35,12 @@ class Bot:
         """getting the name of the user who written to the bot"""
         user_info = self.vk_group_got_api.users.get(user_id=user_id)
         # print(user_info)
-        name = user_info[0]['first_name']
-        return name
+        try:
+            name = user_info[0]['first_name']
+            return name
+        except KeyError:
+            self.send_msg(user_id, "Ошибка")
 
-    # def get_user_info(self, user_id):
-    #     info = self.vk_user_got_api.users.get(
-    #         user_id=user_id,
-    #         fields="counters, "  # Количество различных объектов у пользователя.
-    #                "city, "
-    #                "bdate",
-    #     )
-    #     # print(info[0]['first_name'])
-    #     # print(info[0]['city'])
-    #     print(info[0]['bdate'])
 
     def naming_of_years(self, years, till=True):
         """addition to years"""
@@ -70,8 +62,8 @@ class Bot:
     def input_looking_age(self, user_id, age):
         global age_from, age_to
         a = age.split("-")
-        age_from = int(a[0])
         try:
+            age_from = int(a[0])
             age_to = int(a[1])
             if age_from == age_to:
                 self.send_msg(user_id, f' Ищем возраст {self.naming_of_years(age_to, False)}')
@@ -189,9 +181,7 @@ class Bot:
                     for i in cities:
                         if i["title"] == answer.capitalize():
                             city_id = i["id"]
-                            # print(11, city_id)
                             city_title = answer.capitalize()
-                            # print(111, city_title)
                             return f' в городе {city_title}'
 
     def looking_for_gender(self, user_id):
