@@ -50,13 +50,14 @@ def insert_data_seen_person(id_vk, offset):
             OFFSET '{offset}';"""
         )
 
-# def check():
-#     with conn.cursor() as cursor:
-#         cursor.execute(
-#             f"""SELECT fp.id_vk
-#             FROM found_person AS fp;"""
-#         )
-#         return cursor.fetchall()
+def check():
+    with conn.cursor() as cursor:
+        cursor.execute(
+            f"""SELECT sp.id_vk
+            FROM seen_person AS sp
+            WHERE sp.id_vk IS not NULL;"""
+        )
+        return cursor.fetchall()
 
 
 
@@ -72,7 +73,6 @@ def select(offset):
             ON fp.id_vk = sp.id_vk
             WHERE sp.id_vk IS NULL
             OFFSET '{offset}';"""
-
         )
         return cursor.fetchone()
 
