@@ -8,9 +8,6 @@ for event in bot.longpoll.listen():
     if event.type == VkEventType.MESSAGE_NEW and event.to_me:
         request = event.text.lower()
         user_id = event.user_id
-
-
-
         if request == 'поиск':
             bot.get_age_of_user(user_id)
             bot.get_target_city(user_id)

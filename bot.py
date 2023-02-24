@@ -199,11 +199,10 @@ class Bot:
         else:
             print("ERROR!!!")
 
-    # list_of_candidates = []
-
     def looking_for_persons(self, user_id):
         """ search for a person based on the data received """
-        list_of_candidates = []
+        global list_of_candidates
+        list_of_candidates = set()
         res = self.vk_user_got_api.users.search(  # group_token is unavailable for this method users.search.
             sort=0,  # 1 — по дате регистрации, 0 — по популярности.
             city=city_id,
@@ -226,21 +225,11 @@ class Bot:
                     try:
                         number += 1
                         id_vk = person["id"]
-                        # list_of_candidates.append(id_vk)
-                        # print(check())
-                        for i in check():
-                            print(i[0], type(i[0]))
-                            if i[0] != id_vk:
-                                print(f'{id_vk} есть такой!!! {type(id_vk)}')
-
-
                         insert_found_person(id_vk)  # вставка в БД.
-
-
                     except psycopg2.errors.UniqueViolation:  # Если найденный id_vk уже есть в БД, то он пропускается.
                         pass
         print(f'Bot found {number} opened profiles for viewing from {res["count"]}')
-        return self.send_msg(user_id, f'Бот нашел {number}'), print(list_of_candidates)
+        return list_of_candidates
 
 
     def photo_of_found_person(self, user_id):
@@ -277,7 +266,6 @@ class Bot:
                 return attachments
             except IndexError:
                 return print(f'Нет фото')
-
 
 
     def found_person_info(self, show_person_id):
@@ -322,6 +310,7 @@ class Bot:
             random_id=randrange(10 ** 7),
             attachment=",".join(attachments)
         )
+
 
     def show_found_person(self, user_id):
         """show person from database"""

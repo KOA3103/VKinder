@@ -50,16 +50,6 @@ def insert_data_seen_person(id_vk, offset):
             OFFSET '{offset}';"""
         )
 
-def check():
-    with conn.cursor() as cursor:
-        cursor.execute(
-            f"""SELECT sp.id_vk
-            FROM seen_person AS sp
-            WHERE sp.id_vk IS not NULL;"""
-        )
-        return cursor.fetchall()
-
-
 
 def select(offset):
     """select of unreviewed people"""
@@ -99,10 +89,3 @@ def creating_database():
     create_table_found_person()
     create_table_seen_person()
     print("Database was created!")
-
-# db = creating_database()
-# delete_table_found_person()
-# delete_table_seen_person()
-# create_table_found_person()
-# create_table_seen_person()
-# creating_database()
