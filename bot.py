@@ -201,8 +201,6 @@ class Bot:
 
     def looking_for_persons(self, user_id):
         """ search for a person based on the data received """
-        global list_of_candidates
-        list_of_candidates = set()
         res = self.vk_user_got_api.users.search(  # group_token is unavailable for this method users.search.
             sort=0,  # 1 — по дате регистрации, 0 — по популярности.
             city=city_id,
@@ -229,8 +227,7 @@ class Bot:
                     except psycopg2.errors.UniqueViolation:  # Если найденный id_vk уже есть в БД, то он пропускается.
                         pass
         print(f'Bot found {number} opened profiles for viewing from {res["count"]}')
-        return list_of_candidates
-
+        return
 
     def photo_of_found_person(self, user_id):
         """getting a photo of a found person"""
