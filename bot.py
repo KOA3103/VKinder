@@ -8,8 +8,6 @@ from db import *
 import psycopg2
 from psycopg2 import errors
 
-offset = 0
-
 
 class Bot:
     def __init__(self):
@@ -332,13 +330,8 @@ class Bot:
 
     def show_found_person(self, user_id):
         """show person from database"""
-
-        self.send_msg(user_id, self.found_person_info(self.show_person_id()))
-        self.send_photo(user_id, 'Фото с максимальными лайками', self.photo_of_found_person(self.show_person_id()))
-
-        try:
-            insert_data_seen_person(self.show_person_id())
-        except psycopg2.errors.NotNullViolation:
+        print(self.show_person_id())
+        if self.show_person_id() == None:
             self.send_msg(user_id,
                           f'Все анекты просмотрены. Будет выполнен новый поиск. '
                           f'Измените критерии поиска (возраст, город). '
@@ -350,8 +343,11 @@ class Bot:
                     self.input_looking_age(user_id, age)
                     self.get_target_city(user_id)
                     self.looking_for_persons(user_id)
-                    self.send_msg(user_id, f'  Сейчас наберите "Смотреть" ')
+                    self.show_found_person(user_id)
                     return
+        self.send_msg(user_id, self.found_person_info(self.show_person_id()))
+        self.send_photo(user_id, 'Фото с максимальными лайками', self.photo_of_found_person(self.show_person_id()))
+        insert_data_seen_person(self.show_person_id())
 
 
 bot = Bot()

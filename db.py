@@ -52,4 +52,4 @@ def creating_database():
     create_table_seen_person()
     print("Database was created!")
 
-# creating_database()
+creating_database()
