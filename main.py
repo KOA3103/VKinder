@@ -3,7 +3,7 @@ from bot import *
 from db import *
 from config import *
 
-creating_database()  # создает новую БД.
+
 for event in bot.longpoll.listen():
     if event.type == VkEventType.MESSAGE_NEW and event.to_me:
         request = event.text.lower()
@@ -17,10 +17,7 @@ for event in bot.longpoll.listen():
             creating_database()  # удаляет существующую БД и создает новую.
             bot.send_msg(user_id, f'  Сейчас наберите "Поиск" ')
         elif request == 'смотреть' or request == 's':
-            # for i in range(0, 1000):
-            #     offset += 1
             bot.show_found_person(user_id)
-            # break
         else:
             bot.send_msg(user_id, f'{bot.name(user_id)} Бот готов к поиску, наберите: \n '
                                       f' "Поиск или f" - Поиск людей. \n'

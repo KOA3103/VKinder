@@ -225,11 +225,6 @@ class Bot:
                     number += 1
                     id_vk = person["id"]
                     list_found_persons.append(id_vk)
-
-                    # try:
-                    #     insert_found_person(id_vk)  # вставка в БД.
-                    # except psycopg2.errors.UniqueViolation:  # Если найденный id_vk уже есть в БД, то он пропускается.
-                    #     pass
         print(f'Bot found {number} opened profiles for viewing from {res["count"]}')
         return
 
@@ -271,16 +266,11 @@ class Bot:
     def show_person_id(self):
         global unique_person_id
         seen_person = []
-        # try:
         for i in check():
             seen_person.append(int(i[0]))
-        # except IndexError:
-        #     pass
-        print(seen_person)
         if not seen_person:
             for ifp in list_found_persons:
                 unique_person_id = ifp
-                print("1st persons", unique_person_id, type(unique_person_id))
                 return unique_person_id
         else:
             for ifp in list_found_persons:
@@ -288,7 +278,6 @@ class Bot:
                     pass
                 else:
                     unique_person_id = ifp
-                    print("Unique_person_id", ifp, type(ifp))
                     return unique_person_id
 
 
@@ -343,12 +332,10 @@ class Bot:
 
     def show_found_person(self, user_id):
         """show person from database"""
-        # self.show_person_id()
-        # try:
-            # self.send_msg(user_id, self.found_person_info(select(offset)[0]))
+
         self.send_msg(user_id, self.found_person_info(self.show_person_id()))
         self.send_photo(user_id, 'Фото с максимальными лайками', self.photo_of_found_person(self.show_person_id()))
-            # insert_data_seen_person(select(offset)[0], offset)  # offset ( select(offset)[0] = fp.id_vk )
+
         try:
             insert_data_seen_person(self.show_person_id())
         except psycopg2.errors.NotNullViolation:
