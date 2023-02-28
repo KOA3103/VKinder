@@ -163,7 +163,7 @@ class Bot:
         for event in self.longpoll.listen():
             if event.type == VkEventType.MESSAGE_NEW and event.to_me:
                 answer = event.text.lower()
-                if answer == "да" or answer == "yes":
+                if answer == "да" or answer == "y":
                     info = self.vk_user_got_api.users.get(
                         user_id=user_id,
                         fields="city"
@@ -201,6 +201,8 @@ class Bot:
 
     def looking_for_persons(self, user_id):
         """ search for a person based on the data received """
+        global list_found_persons
+        list_found_persons = []
         res = self.vk_user_got_api.users.search(  # group_token is unavailable for this method users.search.
             sort=0,  # 1 — по дате регистрации, 0 — по популярности.
             city=city_id,
@@ -220,12 +222,14 @@ class Bot:
         for person in res["items"]:
             if not person["is_closed"]:
                 if "city" in person and person["city"]["id"] == city_id and person["city"]["title"] == city_title:
-                    try:
-                        number += 1
-                        id_vk = person["id"]
-                        insert_found_person(id_vk)  # вставка в БД.
-                    except psycopg2.errors.UniqueViolation:  # Если найденный id_vk уже есть в БД, то он пропускается.
-                        pass
+                    number += 1
+                    id_vk = person["id"]
+                    list_found_persons.append(id_vk)
+
+                    # try:
+                    #     insert_found_person(id_vk)  # вставка в БД.
+                    # except psycopg2.errors.UniqueViolation:  # Если найденный id_vk уже есть в БД, то он пропускается.
+                    #     pass
         print(f'Bot found {number} opened profiles for viewing from {res["count"]}')
         return
 
@@ -264,6 +268,31 @@ class Bot:
             except IndexError:
                 return print(f'Нет фото')
 
+    def show_person_id(self):
+        global unique_person_id
+        seen_person = []
+        # try:
+        for i in check():
+            seen_person.append(int(i[0]))
+        # except IndexError:
+        #     pass
+        print(seen_person)
+        if not seen_person:
+            for ifp in list_found_persons:
+                unique_person_id = ifp
+                print("1st persons", unique_person_id, type(unique_person_id))
+                return unique_person_id
+        else:
+            for ifp in list_found_persons:
+                if ifp in seen_person:
+                    pass
+                else:
+                    unique_person_id = ifp
+                    print("Unique_person_id", ifp, type(ifp))
+                    return unique_person_id
+
+
+
 
     def found_person_info(self, show_person_id):
         """information about the found person"""
@@ -301,23 +330,33 @@ class Bot:
 
     def send_photo(self, user_id, message, attachments):
         """method for sending photos"""
-        self.vk_group_got_api.messages.send(
-            user_id=user_id,
-            message=message,
-            random_id=randrange(10 ** 7),
-            attachment=",".join(attachments)
-        )
+        try:
+            self.vk_group_got_api.messages.send(
+                user_id=user_id,
+                message=message,
+                random_id=randrange(10 ** 7),
+                attachment=",".join(attachments)
+            )
+        except TypeError:
+            pass
 
 
     def show_found_person(self, user_id):
         """show person from database"""
+        # self.show_person_id()
+        # try:
+            # self.send_msg(user_id, self.found_person_info(select(offset)[0]))
+        self.send_msg(user_id, self.found_person_info(self.show_person_id()))
+        self.send_photo(user_id, 'Фото с максимальными лайками', self.photo_of_found_person(self.show_person_id()))
+            # insert_data_seen_person(select(offset)[0], offset)  # offset ( select(offset)[0] = fp.id_vk )
         try:
-            self.send_msg(user_id, self.found_person_info(select(offset)[0]))
-            self.send_photo(user_id, 'Фото с максимальными лайками', self.photo_of_found_person(select(offset)[0]))
-            insert_data_seen_person(select(offset)[0], offset)  # offset ( select(offset)[0] = fp.id_vk )
-        except TypeError:
+            insert_data_seen_person(self.show_person_id())
+        except psycopg2.errors.NotNullViolation:
             self.send_msg(user_id,
-                          f'Все анекты просмотрены. Будет выполнен новый поиск. Измените критерии поиска (возраст, город). Введите возраст поиска, на пример от 21 года и до 35 лет, в формате : 21-35 (или 21 конкретный возраст 21 год).  ')
+                          f'Все анекты просмотрены. Будет выполнен новый поиск. '
+                          f'Измените критерии поиска (возраст, город). '
+                          f'Введите возраст поиска, на пример от 21 года и до 35 лет, '
+                          f'в формате : 21-35 (или 21 конкретный возраст 21 год).  ')
             for event in self.longpoll.listen():
                 if event.type == VkEventType.MESSAGE_NEW and event.to_me:
                     age = event.text
