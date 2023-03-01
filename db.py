@@ -47,9 +47,8 @@ def delete_table_seen_person():
         )
 
 
-def creating_database():
-    delete_table_seen_person()
-    create_table_seen_person()
-    print("Database was created!")
 
-creating_database()
+create_table_seen_person()
+print("Database was created!")
+
+

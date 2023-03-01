@@ -5,8 +5,10 @@ from config import user_token, group_token
 from random import randrange
 from pprint import pprint
 from db import *
-import psycopg2
-from psycopg2 import errors
+
+
+# import psycopg2
+# from psycopg2 import errors
 
 
 class Bot:
@@ -38,7 +40,6 @@ class Bot:
             return name
         except KeyError:
             self.send_msg(user_id, "Ошибка")
-
 
     def naming_of_years(self, years, till=True):
         """addition to years"""
@@ -73,12 +74,11 @@ class Bot:
             self.send_msg(user_id, f' Ищем возраст {self.naming_of_years(age_to, False)}')
             return
         except NameError:
-            self.send_msg(user_id, f' Введен не правильный числовой формат! Game over!')
+            self.send_msg(user_id, f' NameError! Введен не правильный числовой формат! Game over!')
             return
         except ValueError:
-            self.send_msg(user_id, f' Введен не правильный числовой формат! Game over!')
+            self.send_msg(user_id, f' ValueError! VВведен не правильный числовой формат! Game over!')
             return
-
 
     def get_years_of_person(self, bdate: str) -> object:
         """determining the number of years"""
@@ -261,25 +261,29 @@ class Bot:
             except IndexError:
                 return print(f'Нет фото')
 
-    def show_person_id(self):
-        global unique_person_id
+    def get_found_person_id(self):
+        global unique_person_id, found_persons
         seen_person = []
-        for i in check():
+        for i in check():  # Выбираем из БД просмотренные анкеты.
             seen_person.append(int(i[0]))
         if not seen_person:
-            for ifp in list_found_persons:
-                unique_person_id = ifp
+            try:   # Если сразу после запуска проги набрать Смотреть или S, то ошибка так как в list_found_persons никого нет.
+                unique_person_id = list_found_persons[0]
                 return unique_person_id
+            except NameError:
+                found_persons = 0
+                return found_persons
         else:
-            for ifp in list_found_persons:
-                if ifp in seen_person:
-                    pass
-                else:
-                    unique_person_id = ifp
-                    return unique_person_id
-
-
-
+            try:  # Если сразу после запуска проги набрать Смотреть или S, то ошибка так как в list_found_persons никого нет.
+                for ifp in list_found_persons:
+                    if ifp in seen_person:
+                        pass
+                    else:
+                        unique_person_id = ifp
+                        return unique_person_id
+            except NameError:
+                found_persons = 0
+                return found_persons
 
     def found_person_info(self, show_person_id):
         """information about the found person"""
@@ -327,13 +331,12 @@ class Bot:
         except TypeError:
             pass
 
-
     def show_found_person(self, user_id):
         """show person from database"""
-        print(self.show_person_id())
-        if self.show_person_id() == None:
+        print(self.get_found_person_id())
+        if self.get_found_person_id() == None:
             self.send_msg(user_id,
-                          f'Все анекты просмотрены. Будет выполнен новый поиск. '
+                          f'Все анекты ранее были просмотрены. Будет выполнен новый поиск. '
                           f'Измените критерии поиска (возраст, город). '
                           f'Введите возраст поиска, на пример от 21 года и до 35 лет, '
                           f'в формате : 21-35 (или 21 конкретный возраст 21 год).  ')
@@ -345,9 +348,11 @@ class Bot:
                     self.looking_for_persons(user_id)
                     self.show_found_person(user_id)
                     return
-        self.send_msg(user_id, self.found_person_info(self.show_person_id()))
-        self.send_photo(user_id, 'Фото с максимальными лайками', self.photo_of_found_person(self.show_person_id()))
-        insert_data_seen_person(self.show_person_id())
+        else:
+            self.send_msg(user_id, self.found_person_info(self.get_found_person_id()))
+            self.send_photo(user_id, 'Фото с максимальными лайками',
+                            self.photo_of_found_person(self.get_found_person_id()))
+            insert_data_seen_person(self.get_found_person_id())
 
 
 bot = Bot()

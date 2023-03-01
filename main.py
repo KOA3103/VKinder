@@ -14,13 +14,17 @@ for event in bot.longpoll.listen():
             bot.looking_for_persons(user_id)  # выводит список в чат найденных людей и добавляет их в базу данных.
             bot.show_found_person(user_id)  # выводит в чат инфо одного человека из базы данных.
         elif request == 'удалить' or request == 'd':
-            creating_database()  # удаляет существующую БД и создает новую.
-            bot.send_msg(user_id, f'  Сейчас наберите "Поиск" ')
+            delete_table_seen_person()  # удаляет существующую БД.
+            create_table_seen_person()  # создает новую БД.
+            bot.send_msg(user_id, f' База данных отчищена! Сейчас наберите "Поиск" или F ')
         elif request == 'смотреть' or request == 's':
-            bot.show_found_person(user_id)
+            if bot.get_found_person_id() != 0:
+                bot.show_found_person(user_id)
+            else:
+                bot.send_msg(user_id, f' В начале наберите Поиск или f.  ')
         else:
             bot.send_msg(user_id, f'{bot.name(user_id)} Бот готов к поиску, наберите: \n '
-                                      f' "Поиск или f" - Поиск людей. \n'
-                                      f' "Удалить или d" - удаляет старую БД и создает новую. \n'
-                                      f' "Смотреть или s" - просмотр следующей записи в БД.')
+                                      f' "Поиск или F" - Поиск людей. \n'
+                                      f' "Удалить или D" - удаляет старую БД и создает новую. \n'
+                                      f' "Смотреть или S" - просмотр следующей записи в БД.')
 
